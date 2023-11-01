@@ -1,0 +1,168 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Georgia Power Bill Calculator</title>
+    <style>
+        .container {
+            display: flex;
+            justify-content: space-between;
+        }
+        .column {
+            flex: 1;
+            padding: 10px;
+        }
+        label {
+            margin-bottom: 10px;
+        }
+        input, select {
+            margin-bottom: 15px;
+        }
+        button {
+            margin-top: 15px;
+        }
+        p {
+            font-size: 20pt;
+        }
+        label, input, button, select {
+            font-size: 15pt;
+        }
+        h1, h2 {
+            font-size: 25pt;
+            text-align: center;
+        }
+        #powerBillForm{
+            padding: 15px;
+            outline: auto;
+            border-radius: 20px;
+        }
+        #result {
+            padding: 20px;
+            outline: auto;
+            border-radius:20px;
+        }
+        p#result {
+            background-color: gray;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="column">
+            <h2>Georgia Power Bill Calculator</h2>
+            <form id="powerBillForm">
+                <p>The utility bill calculator is a resource that the Commission is making
+                    available that allows a consumer to check the accuracy of his/her monthly
+                    electric bill. A bill calculator has been prepared for customers of the
+                    Georgia Power Company. This bill calculator applies only to residential
+                    customers who are receiving service under the standard Residential Tariff
+                    (R-27). For more details regarding Georgia Power's residential tariff
+                    offerings, please visit Georgia Power Pricing & Rates. <br> <br>
+                    Effective August 2023</p>
+                <label for="monthlyUsage">Monthly Usage (kWh):</label>
+                <input type="number" id="monthlyUsage" step="0.01" required><br>
+
+                <label for="billingDays">Billing Days:</label>
+                <input type="number" id="billingDays" required><br>
+
+                <label for="insideCity">Inside City Limits:</label>
+                <input type="checkbox" id="insideCity"><br>
+
+                <label for="season">Season (Summer/Winter):</label>
+                <select id="season">
+                    <option value="summer">Summer</option>
+                    <option value="winter">Winter</option>
+                </select><br>
+
+                <label for="taxRate">Tax Rate (%):</label>
+                <input type="number" id="taxRate" step="0.01" required><br>
+
+                <button type="button" onclick="calculatePowerBill()">Calculate</button>
+            </form>
+        </div>
+        <div class="column">
+            <h2>Details About Your Bill</h2>
+            <div id="result">
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function calculatePowerBill() {
+
+            // Variables for User Input 
+            const monthlyUsage = parseFloat(document.getElementById("monthlyUsage").value);
+            const billingDays = parseFloat(document.getElementById("billingDays").value);
+            const insideCity = document.getElementById("insideCity").checked;
+            const season = document.getElementById("season").value;
+            const taxRate = parseFloat(document.getElementById("taxRate").value);
+
+            // Base Carge 
+            const baseCharge = 0.4603 * billingDays;
+
+            let tier1Charge, tier2Charge, tier3Charge;
+
+            // Calculations for Summer or Winter
+            if (season === "summer") {
+                tier1Charge = Math.min(monthlyUsage, 650) * 0.066678;
+                tier2Charge = Math.min(Math.max(monthlyUsage - 650, 0), 350) * 0.110748;
+                tier3Charge = Math.max(monthlyUsage - 1000, 0) * 0.114625;
+            } else if (season === "winter") {
+                tier1Charge = Math.min(monthlyUsage, 650) * 0.062404;
+                tier2Charge = Math.min(Math.max(monthlyUsage - 650, 0), 350) * 0.062404;
+                tier3Charge = Math.max(monthlyUsage - 1000, 0) * 0.062404;
+            }
+
+            // Base Revenue 
+            const baseRevenue = baseCharge + tier1Charge + tier2Charge + tier3Charge;
+
+            // Fuel Cost Rider
+            const fuelCostRider = season === "summer" ? (0.045876 * monthlyUsage) : (0.042859 * monthlyUsage);
+
+            // Demand Side Management Rider
+            const demandSideManagementRider = 0.015989 * baseRevenue;
+
+            // Nuclear Construction Cost Rider
+            const nuclearConstructionCostRider = 0.041562 * baseRevenue;
+
+            // Environmental Compliance Cost Rider
+            const environmentalComplianceCostRider = 0.162813 * baseRevenue;
+
+            // Total Revenue 
+            const totalRevenue = baseRevenue + fuelCostRider + demandSideManagementRider + nuclearConstructionCostRider + environmentalComplianceCostRider;
+
+            // Franchise Fee
+            const franchiseFee = insideCity ? (0.030674 * totalRevenue) : (0.011839 * totalRevenue);
+
+            // Total Before Tax
+            const totalBeforeTax = totalRevenue + franchiseFee;
+
+            // Total Bill (After Tax)
+            const totalBill = totalBeforeTax * (1 + taxRate / 100);
+
+            // Outputs
+            const resultDiv = document.getElementById("result");
+            resultDiv.innerHTML = `
+                <p>Base Charge: $${baseCharge.toFixed(2)}</p>
+                <p>Tier 1 Charge: $${tier1Charge.toFixed(2)}</p>
+                <p>Tier 2 Charge: $${tier2Charge.toFixed(2)}</p>
+                <p>Tier 3 Charge: $${tier3Charge.toFixed(2)}</p>
+                <p><b>Base Revenue: $${baseRevenue.toFixed(2)}</b></p>
+                <p>Fuel Cost Rider: $${fuelCostRider.toFixed(2)}</p>
+                <p>Demand Side Management Rider: $${demandSideManagementRider.toFixed(2)}</p>
+                <p>Nuclear Construction Cost Rider: $${nuclearConstructionCostRider.toFixed(2)}</p>
+                <p>Environmental Compliance Cost Rider: $${environmentalComplianceCostRider.toFixed(2)}</p>
+                <p><b>Total Revenue: $${totalRevenue.toFixed(2)}</b></p>
+                <p>Franchise Fee: $${franchiseFee.toFixed(2)}</p>
+                <p>Total (Before Tax): $${totalBeforeTax.toFixed(2)}</p>
+                <p><b>Total Bill (With Taxes): $${totalBill.toFixed(2)}</b></p>
+            `;
+
+            // Link for if Bill is > $500
+            if (totalBill > 500) {
+                window.open("https://www.georgiapower.com/residential/save-money-and-energy/products-programs.html");
+            }
+        }
+    </script>
+</body>
+</html>
