@@ -241,16 +241,16 @@ div.assignment h1 {
 div.assignment a:link, a:visited {
     background-color: var(--text-color);
     color: white;
-    padding: 14px 25px;
+    padding: 10px 20px;
     right: 2vw;
     text-align: center;
     text-decoration: none;
     display: flex;
     align-items: center;
     justify-content: center;
-    height: 3vh;
+    height: 2vh;
     width: 60%;
-    margin-bottom: 5%;
+    margin-bottom: 3%;
     margin-right: 5%;
     border-radius: 20px;
     box-shadow: 12px 12px 2px 1px var(--box-shadow);

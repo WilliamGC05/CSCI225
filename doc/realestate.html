@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Real Estate Company</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            font-size: 15pt;
+        }
+
+        #loanCalculator {
+            display: none;
+            float: right;
+            width: 500px;
+            margin-top: 20px;
+            margin-right: 12vh;
+            padding-left: 2%;
+            padding-right: 2%;
+            padding-bottom: 2%;
+            background-color: rgba(216, 244, 250, 0.75);
+            border-radius: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color:rgb(120, 188, 255);
+        }
+
+        tr, td {
+            background-color: rgb(255, 255, 255);
+        }
+
+        /* Background Image */
+        body {
+            background-image: url(../img/Estate.jpg);
+            background-size: cover;
+            padding: 1px;
+        }
+
+        h2 {
+            background-color: rgb(110, 196, 225);
+        }
+
+        #loanCalculator.p {
+            padding: 2%;
+        }
+
+        #head {
+            text-align: center;
+            padding: .25%;
+            border-radius: 20px;
+        }
+
+        #loanCalc {
+            background-color: rgb(38, 176, 223);
+            padding: 1%;
+            border-radius: 25px;
+            font-size: 20pt;
+        }
+
+        #intro {
+            background-color: rgba(239, 251, 255, 0.8);
+            width: 35%;
+            margin-bottom: 50px;
+            padding: .5%;
+            border-radius: 25px;
+        }
+
+        input {
+            padding: .5%;
+            font-size: 15pt;
+        }
+
+        button {
+            font-size: 15pt;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="intro"><h1>Welcome to Our Real Estate Company</h1>
+
+    <p>Use our provided Loan Calculator to calculate the best loan for your purchase.</p></div>
+
+    <a href="#" id="loanCalc" onclick="toggleLoanCalculator()">Loan Calculator</a>
+
+    <div id="loanCalculator">
+        <h2 id="head">Loan Calculator</h2>
+        <p><label for="loanAmount">Loan Amount:</label>
+        <input type="text" id="loanAmount" placeholder="Enter loan amount"></p>
+
+        <p><label for="interestRate">Interest Rate (annual):</label>
+        <input type="text" id="interestRate" placeholder="Enter interest rate"></p>
+
+        <p><label for="loanTerm">Loan Term (in Years):</label>
+        <input type="text" id="loanTerm" placeholder="Enter loan term"></p>
+
+        <p><label for="startYear">Start Year:</label>
+        <input type="text" id="startYear" placeholder="Enter start year"></p>
+
+        <button onclick="calculateLoan()">Calculate</button>
+
+        <h3>Monthly Payment:</h3>
+        <p id="monthlyPaymentValue"></p>
+
+        <table id="tableOrder">
+            <tr>
+                <th>Date</th>
+                <th>Interest</th>
+                <th>Principal</th>
+                <th>Balance</th>
+            </tr>
+        </table>
+    </div>
+
+    <script>
+        function toggleLoanCalculator() {
+            var calculator = document.getElementById('loanCalculator');
+            calculator.style.display = (calculator.style.display === 'none' || calculator.style.display === '') ? 'block' : 'none';
+        }
+
+        function calculateLoan() {
+            var loanAmount = parseFloat(document.getElementById('loanAmount').value);
+            var interestRate = parseFloat(document.getElementById('interestRate').value);
+            var loanTerm = parseInt(document.getElementById('loanTerm').value);
+            var startYear = parseInt(document.getElementById('startYear').value);
+
+            if (isNaN(loanAmount) || isNaN(interestRate) || isNaN(loanTerm) || isNaN(startYear)) {
+                alert("Please enter valid numerical values for all fields.");
+                return;
+            }
+
+            // Convert the interest rate to a decimal
+            var monthlyInterestRate = interestRate / 100 / 12;
+            var numberOfPayments = loanTerm * 12;
+            var monthlyPayment = (loanAmount * monthlyInterestRate) / (1 - Math.pow(1 + monthlyInterestRate, -numberOfPayments));
+
+            var table = document.getElementById('tableOrder');
+            table.innerHTML = '<tr><th>Date</th><th>Interest</th><th>Principal</th><th>Balance</th></tr>';
+
+            var balance = loanAmount;
+            var previousYear = startYear - 1;
+
+            for (var year = startYear; year <= startYear + loanTerm; year++) {
+                var totalInterestPaid = 0;
+                var totalPrincipalPaid = 0;
+
+                for (var month = 1; month <= 12; month++) {
+                    var interestPaid = balance * monthlyInterestRate;
+                    var principalPaid = monthlyPayment - interestPaid;
+                    balance -= principalPaid;
+
+                    totalInterestPaid += interestPaid;
+                    totalPrincipalPaid += principalPaid;
+
+                    if (balance <= 0) {
+                        balance = 0;
+                        break;
+                }
+            }
+                var row = table.insertRow(-1);
+
+                row.insertCell(0).textContent = year;
+                row.insertCell(1).textContent = "$" + totalInterestPaid.toFixed(2);
+                row.insertCell(2).textContent = "$" + totalPrincipalPaid.toFixed(2);
+                row.insertCell(3).textContent = "$" + balance.toFixed(2);
+
+                previousYear = year;
+            }
+
+            document.getElementById('monthlyPaymentValue').textContent = '$' + monthlyPayment.toFixed(2);
+        }
+    </script>
+
+</body>
+</html>
